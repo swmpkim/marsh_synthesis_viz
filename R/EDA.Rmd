@@ -93,8 +93,80 @@ What do I want to know:
 Would be good to turn this into a shiny app or something; it's going to be a LOT of output otherwise  
 
 ```{r}
+cover_long %>% 
+    summarize(n_sites = length(unique(site)),
+              date_min = min(date),
+              date_max = max(date),
+              n_plots = length(unique(plot_id)),
+              n_species = length(unique(species))) %>% 
+    knitr::kable()
+```
+
+```{r}
+cover_long %>% 
+    group_by(site) %>% 
+    summarize(date_min = min(date),
+              date_max = max(date),
+              n_transects = length(unique(transect_number)),
+              n_plots = length(unique(plot_id)),
+              n_species = length(unique(species))) %>% 
+    knitr::kable()
+```
+
+All species:  
+
+```{r}
+unique(cover_long$species)
+```
+
+How to count species where most aren't NA?
+
+```{r}
+# get rid of totals
+to_exclude <- c("TOTAL", "TOTAL W/O Water")
+
+non_zeros <- cover_long %>% 
+    group_by(site, species) %>% 
+    filter(!(species %in% to_exclude)) %>% 
+    summarize(non_zeros = sum(pct_cover > 0),
+              zeros = sum(pct_cover == 0)) %>%
+    mutate(pct_non_zeros = round(non_zeros*100/(non_zeros + zeros), 1)) %>% 
+    arrange(desc(pct_non_zeros))
+
+knitr::kable(non_zeros[1:100, ])
 
 ```
+
+Narrow down by using species that showed up at *any* site more than..... 5% of the time? How many species is this?  
+
+```{r}
+five_pct <- non_zeros %>% 
+    filter(pct_non_zeros >= 5.0) %>% 
+    ungroup() %>% 
+    summarize(species = unique(species)) %>% 
+    arrange(species)
+
+nrow(five_pct)
+knitr::kable(five_pct)
+```
+
+Species that show up more than 10% of the time at 1 or more sites:  
+
+```{r}
+ten_pct <- non_zeros %>% 
+    filter(pct_non_zeros >= 10.0) %>% 
+    ungroup() %>% 
+    summarize(species = unique(species)) %>% 
+    arrange(species) 
+
+nrow(ten_pct)
+knitr::kable(ten_pct)
+```
+
+10% seems like a good cutoff, at least for Great Bay. Unsure what it will look like for others. 
+
+## NEED: Build in flexibility for species selection  
+
 
 
 # Exploratory analysis of vegetation data  
