@@ -29,16 +29,25 @@ Really should source another script or write a function to do this, but I'm in t
 # anything that does NOT have 'Canopy Ht' or 'Density' in the column name 
 # once identifying info stops is percent cover
 grb_in <- here::here("data", "GRB Data Packet 6-8-21.xlsx")
-wqb_in <- here::here("data", "WQB Data Packet 2011-2020.xlsx")
+wqb_in <- here::here("data", "WQB Data Packet 2011-2020 kac_fixes.xlsx")
 ```
 
 ## Change reserve HERE
 
 ```{r}
 # work with GRB first
-dat <- read_xlsx(grb_in, sheet = "Veg",
-                 skip = 1)
+# dat <- read_xlsx(grb_in, sheet = "Veg",
+#                  skip = 1)
 ```
+
+```{r}
+# WQB - but have to get rid of extra columns -
+# 264 to end
+dat <- read_xlsx(wqb_in, sheet = "Veg",
+                 skip = 1)
+# dat <- dat[,1:263] # AVOID THIS. CONVINCE CHRIS ABOUT SEPARATING DIFFERENT TYPES OF DATA FOR PREDICTABILITY.
+```
+
 
 ```{r}
 # bust up into data types, like we'll get in the template
@@ -57,6 +66,8 @@ cover <- dat %>%
 ncol(dat) == ncol(id_cols) + ncol(density) + ncol(height) + ncol(cover)
 
 # for now, just work with cover
+# WQB has a 0,5 instead of 0.5 in the Toxicodendron radicans column
+# FIGURE OUT A WAY TO FIND THIS TYPE OF THING BEFORE CRUNCHING NUMBERS
 cover <- cover %>% 
     select(-contains("Unknown"),
            -contains("Notes")) %>% 

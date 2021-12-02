@@ -1,0 +1,22 @@
+---
+title: "Notes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+General things I'm finding as I'm working on EDA.  
+
+**FIGURE OUT WAYS TO FIND THIS STUFF BEFORE CRUNCHING NUMBERS**  
+
+Because even though we'll try to fix it for this project's outputs, it's bound to happen again in the future, somewhere.  
+
+# WQB  
+
+I've modified my input file and saved it as `WQB Data Packet 2011-2020 kac_fixes.xlsx`.  
+
++  has a bunch of non-species-related columns in the data packet from NE project. Had to remove these to make the same script that worked with GRB work with this data file. Underscores importance of keeping different data types separate, because otherwise my scripts won't be able to predict everything and won't work as intended.  
++  has a `0,5` instead of (I assume) `0.5` in the `Toxicodendron radicans` column: Section 1, Summer, 2020, Transect 1, plot S1-1-10  
++  has a date somewhere entered as `08/29/117`: Section 1, 2017, Transect 3, plot S1-3-13    

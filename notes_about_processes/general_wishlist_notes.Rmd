@@ -1,0 +1,20 @@
+---
+title: "Wish List"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Things to ideally do to build flexibility into the project outputs.  
+
+## Species selection  
+
+There are over 210 species in both files I've worked with so far, and that's...... overwhelming to say the least. In my EDA file, I've reduced it to the species that are non-zero in at least 10% of readings at one or more sites. This has still been 17-18 species, which is more manageable but still a lot to look at.  
+
+Would be nice to:  
+
++  identify a handful of specific species to focus on - maybe in some input file? (from Excel, like the user-specified inputs from SETr?)  
++  let the user decide how many readings to focus on - at least 10% non-zero? 25%?  
++  let the user decide how to deal with things like bare ground, wrack, dead, and water.  
