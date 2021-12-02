@@ -222,8 +222,13 @@ filter(trimmed2, site == "Bunker Creek") %>%
 Generalize that into a function  
 
 ```{r}
-plot_one_site <- function(data, site, ncol){
-    dat <- data[, site == site]
+plot_one_site <- function(data, site, ncol, by_transect = FALSE){
+    dat <- data[which(data$site == site), ]
+    if(by_transect == TRUE){
+      dat <- dat %>% 
+        group_by(site, year, date, transect_number, species) %>% 
+        summarize(pct_cover = mean(pct_cover))
+    }
     ggplot(dat) +
         geom_point(aes(x = year, y = pct_cover,
                        color = as.factor(transect_number)),
@@ -240,13 +245,13 @@ plot_one_site <- function(data, site, ncol){
 
 ```{r}
 plot_one_site(trimmed2, "Bunker Creek", 3)
+plot_one_site(trimmed2, "Bunker Creek", 3, by_transect = TRUE)
+plot_one_site(trimmed2, "Great Bay Farms", 3)
 
 all_sites <- unique(trimmed2$site)
 for(i in seq_along(all_sites)){
-    print(plot_one_site(trimmed2, all_sites[i], 3))
+    print(plot_one_site(trimmed2, all_sites[i], 3, by_transect = TRUE))
 }
 ```
 
-# TROUBLESHOOT ME  
 
-Something's wrong..... all the graphs coming out of the loop are the same.  
