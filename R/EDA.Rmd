@@ -213,10 +213,10 @@ For Great Bay, this reduced the number of rows from 230,000 to 19,000. That's pr
 ```
 
 ```{r}
-filter(trimmed2, site == "Bunker Creek") %>% 
-    ggplot() +
-    geom_point(aes(x = year, y = pct_cover, color = as.factor(transect_number)), alpha = 0.5, size = 2) +
-    facet_wrap(~species, ncol = 4)
+# filter(trimmed2, site == "Bunker Creek") %>% 
+#     ggplot() +
+#     geom_point(aes(x = year, y = pct_cover, color = as.factor(transect_number)), alpha = 0.5, size = 2) +
+#     facet_wrap(~species, ncol = 4)
 ```
 
 Generalize that into a function  
@@ -244,9 +244,9 @@ plot_one_site <- function(data, site, ncol, by_transect = FALSE){
 ```
 
 ```{r}
-plot_one_site(trimmed2, "Bunker Creek", 3)
-plot_one_site(trimmed2, "Bunker Creek", 3, by_transect = TRUE)
-plot_one_site(trimmed2, "Great Bay Farms", 3)
+# plot_one_site(trimmed2, "Bunker Creek", 3)
+# plot_one_site(trimmed2, "Bunker Creek", 3, by_transect = TRUE)
+# plot_one_site(trimmed2, "Great Bay Farms", 3)
 
 all_sites <- unique(trimmed2$site)
 for(i in seq_along(all_sites)){
