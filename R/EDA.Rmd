@@ -14,6 +14,7 @@ library(readxl)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(forcats)
 ```
 
 # Read in and shape data  
@@ -124,7 +125,9 @@ How to count species where most aren't NA?
 ```{r}
 # get rid of totals
 to_exclude <- c("TOTAL", "TOTAL W/O Water")
+```
 
+```{r}
 non_zeros <- cover_long %>% 
     group_by(site, species) %>% 
     filter(!(species %in% to_exclude)) %>% 
@@ -179,6 +182,71 @@ Here I want to know things like:
 +  how many species appear a LOT (unsure how to define this for R; it's a "know it when I see it" kind of thing) - what's dominant, what's common, etc. because we can potentially narrow everything down to just a few species.  
 +  NE project made pie charts for each site, each year. Could do this. Potentially also stacked bar chart or something. Unsure what would be cleanest.  
   +  probably have to combine some (several) species into an "other" category. `dplyr` has some way to do this, right? anything making up less than X% gets lumped together?   
-    +  `forcats::fct_lump()` is it. source: https://stackoverflow.com/a/55093206 
+    +  `forcats::fct_lump()` is it. source: https://stackoverflow.com/a/55093206   
+    +  help file for that led me to `forcats::fct_other`, which lets you specify a vector of values to keep/drop. Given what I've done below, this seems most useful.  
   +  can facet a stacked bar chart by site. x = year, y = species (proportion at site), facet = site.  
   +  would a scatter/line plot work just as well? Maybe? could be easier to follow an individual species.....  
+
+
+## Trim to top 10% of species, lumping everything else into 'other'  
+
+```{r}
+trimmed <- cover_long %>% 
+    filter(!(species %in% to_exclude)) %>% 
+    mutate(species = fct_other(species, keep = c(ten_pct$species)))
+```
+
+Now need to add up all those "Other"s for each site/plot/date.  
+
+```{r}
+trimmed2 <- trimmed %>% 
+    group_by(site, year, date, transect_number, plot_id, species) %>% 
+    summarize(pct_cover = sum(pct_cover))
+```
+
+For Great Bay, this reduced the number of rows from 230,000 to 19,000. That's pretty impressive. A lot of the species are still showing 0s at Bunker Creek (probably not at other sites).  
+
+```{r}
+# ggplot(trimmed2) +
+#     geom_point(aes(x = year, y = pct_cover, color = as.factor(transect_number)), alpha = 0.5, size = 2) +
+#     facet_grid(species ~ site)
+```
+
+```{r}
+filter(trimmed2, site == "Bunker Creek") %>% 
+    ggplot() +
+    geom_point(aes(x = year, y = pct_cover, color = as.factor(transect_number)), alpha = 0.5, size = 2) +
+    facet_wrap(~species, ncol = 4)
+```
+
+Generalize that into a function  
+
+```{r}
+plot_one_site <- function(data, site, ncol){
+    dat <- data[, site == site]
+    ggplot(dat) +
+        geom_point(aes(x = year, y = pct_cover,
+                       color = as.factor(transect_number)),
+                   alpha = 0.5, size = 2) +
+        facet_wrap(~species, ncol = ncol) +
+        labs(title = site,
+             color = "Transect") +
+        theme(legend.position = "right")
+}
+# data = data frame
+# site = IN QUOTES, the site you want to see
+# ncol = number of columns
+```
+
+```{r}
+plot_one_site(trimmed2, "Bunker Creek", 3)
+
+all_sites <- unique(trimmed2$site)
+for(i in seq_along(all_sites)){
+    print(plot_one_site(trimmed2, all_sites[i], 3))
+}
+```
+
+# TROUBLESHOOT ME  
+
+Something's wrong..... all the graphs coming out of the loop are the same.  
