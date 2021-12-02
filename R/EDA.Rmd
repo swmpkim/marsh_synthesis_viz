@@ -106,6 +106,7 @@ Here I want to know things like:
 +  how many species appear  
 +  how many species appear a LOT (unsure how to define this for R; it's a "know it when I see it" kind of thing) - what's dominant, what's common, etc. because we can potentially narrow everything down to just a few species.  
 +  NE project made pie charts for each site, each year. Could do this. Potentially also stacked bar chart or something. Unsure what would be cleanest.  
-  +  probably have to combine some (several) species into an "other" category. `dplyr` has some way to do this, right? anything making up less than X% gets lumped together?    
+  +  probably have to combine some (several) species into an "other" category. `dplyr` has some way to do this, right? anything making up less than X% gets lumped together?   
+    +  `forcats::fct_lump()` is it. source: https://stackoverflow.com/a/55093206 
   +  can facet a stacked bar chart by site. x = year, y = species (proportion at site), facet = site.  
   +  would a scatter/line plot work just as well? Maybe? could be easier to follow an individual species.....  
