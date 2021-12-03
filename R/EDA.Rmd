@@ -151,33 +151,6 @@ knitr::kable(non_zeros[1:100, ])
 
 ```
 
-Narrow down by using species that showed up at *any* site more than..... 5% of the time? How many species is this?  
-
-```{r}
-five_pct <- non_zeros %>% 
-    filter(pct_non_zeros >= 5.0) %>% 
-    ungroup() %>% 
-    summarize(species = unique(species)) %>% 
-    arrange(species)
-
-nrow(five_pct)
-knitr::kable(five_pct)
-```
-
-Species that show up more than 10% of the time at 1 or more sites:  
-
-```{r}
-ten_pct <- non_zeros %>% 
-    filter(pct_non_zeros >= 10.0) %>% 
-    ungroup() %>% 
-    summarize(species = unique(species)) %>% 
-    arrange(species) 
-
-nrow(ten_pct)
-knitr::kable(ten_pct)
-```
-
-10% seems like a good cutoff, at least for Great Bay. Unsure what it will look like for others. 
 
 ## NEED: Build in flexibility for species selection  
 
@@ -199,38 +172,47 @@ Here I want to know things like:
   +  would a scatter/line plot work just as well? Maybe? could be easier to follow an individual species.....  
 
 
-## Trim to top 10% of species, lumping everything else into 'other'  
+
+
+## Top_x_pct  
+
+### Specify here:  
+
+The below identifies species that were present more than `x`% of the time, at one or more sites. Alternately, could just choose some number of species?  
 
 ```{r}
-trimmed <- cover_long %>% 
-    filter(!(species %in% to_exclude)) %>% 
-    mutate(species = fct_other(species, keep = c(ten_pct$species)))
+pct <- 25
 ```
 
-Now need to add up all those "Other"s for each site/plot/date.  
+Let R do the rest:  
 
 ```{r}
+x_pct <- non_zeros %>% 
+    filter(pct_non_zeros >= pct) %>% 
+    ungroup() %>% 
+    summarize(species = unique(species)) %>% 
+    arrange(species)
+
+nrow(x_pct)
+knitr::kable(x_pct, caption = paste0("Species that show up at least ", pct, "% of the time at one or more sites"))
+```
+
+```{r}
+# get rid of totals
+to_exclude <- c("TOTAL", "TOTAL W/O Water")
+
+# trim and create "Other" category
+trimmed <- cover_long %>% 
+    filter(!(species %in% to_exclude)) %>% 
+    mutate(species = fct_other(species, keep = c(x_pct$species)))
+
+# add up all the "Other"s
 trimmed2 <- trimmed %>% 
     group_by(site, year, date, transect_number, plot_id, species) %>% 
     summarize(pct_cover = sum(pct_cover))
 ```
 
-For Great Bay, this reduced the number of rows from 230,000 to 19,000. That's pretty impressive. A lot of the species are still showing 0s at Bunker Creek (probably not at other sites).  
-
-```{r}
-# ggplot(trimmed2) +
-#     geom_point(aes(x = year, y = pct_cover, color = as.factor(transect_number)), alpha = 0.5, size = 2) +
-#     facet_grid(species ~ site)
-```
-
-```{r}
-# filter(trimmed2, site == "Bunker Creek") %>% 
-#     ggplot() +
-#     geom_point(aes(x = year, y = pct_cover, color = as.factor(transect_number)), alpha = 0.5, size = 2) +
-#     facet_wrap(~species, ncol = 4)
-```
-
-Generalize that into a function  
+## Plotting function  
 
 ```{r}
 plot_one_site <- function(data, site, ncol, by_transect = FALSE){
